@@ -81,7 +81,7 @@ Save this manifest as `pvc.yaml`:
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: demo-pvc
+  name: pvc-1gb
 spec:
   accessModes:
     - ReadWriteOnce
@@ -105,7 +105,7 @@ Save this manifest as `pod.yaml`:
 apiVersion: v1
 kind: Pod
 metadata:
-  name: demo-pod
+  name: pod-pvc
 spec:
   containers:
     - name: app
@@ -117,7 +117,7 @@ spec:
   volumes:
     - name: storage
       persistentVolumeClaim:
-        claimName: demo-pvc
+        claimName: pvc-1gb
 ```
 
 Apply it:
@@ -131,14 +131,14 @@ kubectl apply -f pod.yaml
 ```bash
 kubectl get pvc
 kubectl get pv
-kubectl get pod demo-pod
-kubectl describe pvc demo-pvc
+kubectl get pod pod-pvc
+kubectl describe pvc pvc-1gb
 ```
 
 #### Step 6: Test volume mount inside the container
 
 ```bash
-kubectl exec -it demo-pod -- sh
+kubectl exec -it pod-pvc -- sh
 ```
 
 Inside the pod:
