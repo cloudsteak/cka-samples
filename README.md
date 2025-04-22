@@ -58,8 +58,10 @@ The CKA exam is divided into several domains, each with its own set of competenc
 
 ## Useful links
 
+- [Official Kubernetes Documentation](https://kubernetes.io/docs/home/) 
 - [Candidate Handbook](https://docs.linuxfoundation.org/tc-docs/certification/lf-handbook2)
 - [Exam Tips for CKA and CKAD](https://docs.linuxfoundation.org/tc-docs/certification/tips-cka-and-ckad)
 - [Curriculum](https://github.com/cncf/curriculum) - here you can find the curriculum for the CKA exam
+
 
 
