@@ -54,6 +54,7 @@ Understand how to:
 - A running Kind cluster
 - `kubectl` installed and configured
 - Optional: `local-path-provisioner` deployed in the cluster
+- Working directory: `01-storage/01-dynamic-volume-provisioning`
 
 ### Step-by-step practice using Kind and local-path-provisioner
 
@@ -72,6 +73,7 @@ This creates a StorageClass named `local-path`.
 ```bash
 kubectl patch storageclass local-path -p '{"metadata": {"annotations":{"storageclass.kubernetes.io/is-default-class":"true"}}}'
 ```
+
 
 #### Step 3: Create a PersistentVolumeClaim
 
