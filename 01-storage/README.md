@@ -75,55 +75,22 @@ kubectl patch storageclass local-path -p '{"metadata": {"annotations":{"storagec
 
 #### Step 3: Create a PersistentVolumeClaim
 
-Save this manifest as `pvc.yaml`:
-
-```yaml
-apiVersion: v1
-kind: PersistentVolumeClaim
-metadata:
-  name: pvc-1gb
-spec:
-  accessModes:
-    - ReadWriteOnce
-  resources:
-    requests:
-      storage: 1Gi
-  storageClassName: local-path
-```
+Check the pvc manifest in `pvc-1gb.yaml`
 
 Apply it:
 
 ```bash
-kubectl apply -f pvc.yaml
+kubectl apply -f pvc-1gb.yaml
 ```
 
 #### Step 4: Create a pod that uses the PVC
 
-Save this manifest as `pod.yaml`:
-
-```yaml
-apiVersion: v1
-kind: Pod
-metadata:
-  name: pod-pvc
-spec:
-  containers:
-    - name: app
-      image: busybox
-      command: ["sleep", "3600"]
-      volumeMounts:
-        - mountPath: "/data"
-          name: storage
-  volumes:
-    - name: storage
-      persistentVolumeClaim:
-        claimName: pvc-1gb
-```
+Check the pod manifest in `pod-1-pvc-1gb.yaml`
 
 Apply it:
 
 ```bash
-kubectl apply -f pod.yaml
+kubectl apply -f pod-1-pvc-1gb.yaml
 ```
 
 #### Step 5: Verify resources
@@ -131,14 +98,14 @@ kubectl apply -f pod.yaml
 ```bash
 kubectl get pvc
 kubectl get pv
-kubectl get pod pod-pvc
+kubectl get pod pod-1-pvc
 kubectl describe pvc pvc-1gb
 ```
 
 #### Step 6: Test volume mount inside the container
 
 ```bash
-kubectl exec -it pod-pvc -- sh
+kubectl exec -it pod-1-pvc -- sh
 ```
 
 Inside the pod:
@@ -146,6 +113,38 @@ Inside the pod:
 ```sh
 echo "hello cka" > /data/test.txt
 cat /data/test.txt
+```
+
+#### Step 7: Create a second pod using the same PVC
+
+Check the pod manifest in `pod-2-pvc-1gb.yaml`
+Apply it:
+
+```bash
+kubectl apply -f pod-2-pvc-1gb.yaml
+```
+
+#### Step 8: Verify the second pod
+
+```bash
+kubectl get pod pod-2-pvc
+kubectl exec -it pod-2-pvc -- sh
+```
+
+Inside the second pod:
+
+```sh
+cat /data/test.txt
+```
+
+This should show the same content as in the first pod.
+
+#### Step 9: Clean up
+
+```bash
+kubectl delete -f pod-2-pvc-1gb.yaml
+kubectl delete -f pod-1-pvc-1gb.yaml
+kubectl delete -f pvc-1gb.yaml
 ```
 
 ### Key observations
@@ -156,12 +155,76 @@ cat /data/test.txt
 
 ### Kind versus cloud-based Kubernetes clusters
 
-In a Kind cluster:
+This section highlights key differences when working with storage classes and dynamic provisioning in Kind versus production-grade Kubernetes clusters such as Amazon EKS, Google GKE, or Azure AKS.
 
-- Dynamic provisioning is simulated using hostPath via local-path-provisioner.
-- No real cloud disk resources are provisioned.
+#### 1. Provisioner
 
-In a real Kubernetes cluster (e.g., AWS, Azure, GCP):
+**Kind:**
+- Uses `hostPath` under the hood, typically via `local-path-provisioner`.
+- Volumes are directories on the host machine (e.g., within Docker container filesystem).
+- The provisioner is not cloud-native; no real persistent storage is provisioned outside the local node.
 
-- The StorageClass uses a CSI driver to provision real block storage (e.g., EBS, Azure Disk).
-- Volumes are managed by cloud infrastructure and persist independently of the container lifecycle.
+**Real cluster:**
+- Uses cloud-native CSI drivers (e.g., `ebs.csi.aws.com`, `disk.csi.azure.com`, `pd.csi.storage.gke.io`).
+- Provisioned volumes are real block storage devices in the cloud.
+- Volumes persist independently of the node or pod lifecycle.
+
+---
+
+#### 2. Storage persistence and behavior
+
+**Kind:**
+- Volumes are ephemeral and tied to the container running the Kind node.
+- Restarting the Kind cluster or Docker container may lead to data loss unless special volume mappings are configured.
+
+**Real cluster:**
+- Persistent Volumes are truly persistent and survive pod restarts, node failures, and even cluster upgrades (depending on reclaim policy).
+
+---
+
+#### 3. Access modes
+
+**Kind:**
+- `ReadWriteOnce` is supported for pods scheduled to the same node.
+- Multi-pod access using the same PVC may fail if pods are scheduled on different nodes, depending on hostPath limitations.
+
+**Real cluster:**
+- Real storage backends can enforce and support `ReadWriteOnce`, `ReadOnlyMany`, or `ReadWriteMany` according to backend capabilities.
+- Shared access is properly enforced at the infrastructure level.
+
+---
+
+#### 4. Reclaim policies and lifecycle
+
+**Kind:**
+- `Retain` and `Delete` policies can be defined but often do not behave as expected, because the backing storage is not persistent.
+
+**Real cluster:**
+- `Delete` reclaims and deletes the cloud disk.
+- `Retain` detaches the disk but leaves it available for manual recovery or reassignment.
+
+---
+
+#### 5. Performance and scalability
+
+**Kind:**
+- Not suitable for performance or scale testing.
+- Ideal for functional and configuration validation.
+
+**Real cluster:**
+- Designed for production workloads.
+- Storage behavior and performance metrics reflect real-world expectations.
+
+---
+
+#### Summary
+
+| Feature                | Kind (local-path)                  | Real Cluster (Cloud CSI)         |
+|------------------------|------------------------------------|----------------------------------|
+| Provisioner type       | HostPath via local-path            | Cloud-native CSI driver          |
+| Persistent storage     | No (host-level only)               | Yes                              |
+| StorageClass behavior  | Simulated                          | Fully supported                  |
+| AccessMode enforcement | Limited                            | Enforced                         |
+| ReclaimPolicy behavior | Incomplete                         | Fully supported                  |
+| Use case               | Local testing                      | Production-grade deployments     |
+
