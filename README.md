@@ -24,6 +24,7 @@ The CKA exam is divided into several domains, each with its own set of competenc
 
 - Troubleshoot clusters and nodes.
 - Troubleshoot cluster components.
+- Cluster backup and restore.
 - Monitor cluster and application resource usage.
 - Manage and evaluate container output streams.
 - Troubleshoot services and networking.
