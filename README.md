@@ -58,10 +58,19 @@ The CKA exam is divided into several domains, each with its own set of competenc
 
 ## Useful links
 
-- [Official Kubernetes Documentation](https://kubernetes.io/docs/home/) 
+- [Official Kubernetes Documentation](https://kubernetes.io/docs/home/)
 - [Candidate Handbook](https://docs.linuxfoundation.org/tc-docs/certification/lf-handbook2)
 - [Exam Tips for CKA and CKAD](https://docs.linuxfoundation.org/tc-docs/certification/tips-cka-and-ckad)
 - [Curriculum](https://github.com/cncf/curriculum) - here you can find the curriculum for the CKA exam
 
+## Examples
 
+- [01-storage](01-storage/README.md) - All about storage classes and dynamic volume provisioning
+- [02-troubleshooting](02-troubleshooting/README.md) - Troubleshooting clusters and nodes
+- [03-workloads](03-workloads-and-scheduling/README.md) - Workloads and scheduling
+- [04-cluster-architecture](04-cluster-architecture/README.md) - Cluster architecture, installation and configuration
+- [05-services](05-services-and-networking/README.md) - Services and networking
 
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
