@@ -1,0 +1,47 @@
+# apache-deployment.yaml
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: cka-hpa
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: apache-deploy
+  namespace: cka-hpa
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: apache
+  template:
+    metadata:
+      labels:
+        app: apache
+    spec:
+      containers:
+        - name: apache
+          image: httpd
+          ports:
+            - containerPort: 80
+          resources:
+            requests:
+              cpu: "100m"
+            limits:
+              cpu: "200m"
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: apache-service
+  namespace: cka-hpa
+spec:
+  selector:
+    app: apache
+  type: NodePort
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 80
+      nodePort: 30080
